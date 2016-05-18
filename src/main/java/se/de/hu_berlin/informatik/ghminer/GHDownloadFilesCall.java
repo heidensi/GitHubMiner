@@ -43,7 +43,8 @@ public class GHDownloadFilesCall extends CallableWithPaths<Object,Boolean> {
 				
 				File tar_f = getOutputPath().toFile();
 				
-				// the src object has a method to get the input stream but it throws IO exceptions like crazy
+				// to download from this url seems to be forbidden
+				log.info( "Downloading " + ghte.getPath() + " from " + ghte.getUrl());
 				URL website = ghte.getUrl();
 				ReadableByteChannel rbc = Channels.newChannel( website.openStream() );
 				fos = new FileOutputStream( tar_f );
