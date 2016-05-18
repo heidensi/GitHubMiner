@@ -32,7 +32,7 @@ public class GHDownloadFilesCall extends CallableWithPaths<Object,Boolean> {
 		branch = aBranch.endsWith( "/" ) ? aBranch : aBranch + "/";
 	}
 
-	public static Logger log = LoggerFactory.getLogger( GHDownloadFilesCall.class );;
+	public Logger log = LoggerFactory.getLogger( GHDownloadFilesCall.class );;
 
 	/**
 	 * Starts the download of all files from the given collection into the target
@@ -45,35 +45,31 @@ public class GHDownloadFilesCall extends CallableWithPaths<Object,Boolean> {
 		String downloadURL = "";
 
 		GHTreeEntry ghte = (GHTreeEntry) getInput();
-		while( ghte != null ) {
-
-			FileOutputStream fos = null;
+		FileOutputStream fos = null;
+		
+		try {
+			File tar_f = getOutputPath().toFile();
 			
-			try {
-				File tar_f = getOutputPath().toFile();
-				
-				// to download from this url seems to be forbidden
-				downloadURL = downloadURLRoot + ghte.getPath();
-				log.info( "Downloading " + downloadURL + " to " + tar_f);
-				URL website = new URL( downloadURL );
-				ReadableByteChannel rbc = Channels.newChannel( website.openStream() );
-				fos = new FileOutputStream( tar_f );
-				fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);	
-			} catch (IOException e) {
-				log.error( "Error with content " + ghte.getPath(), e );
-				return false;
-			} finally {
-				if( fos != null ) {
-					try {
-						fos.close();
-					} catch (IOException e) {
-						// nothing to do
-					}
+			downloadURL = downloadURLRoot + ghte.getPath();
+			log.info( "Downloading " + downloadURL + " to " + tar_f);
+			URL website = new URL( downloadURL );
+			ReadableByteChannel rbc = Channels.newChannel( website.openStream() );
+			fos = new FileOutputStream( tar_f );
+			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);	
+		} catch (IOException e) {
+			log.error( "Error with content " + ghte.getPath(), e );
+			return false;
+		} finally {
+			if( fos != null ) {
+				try {
+					fos.close();
+				} catch (IOException e) {
+					// nothing to do
 				}
 			}
-			
-			ghte = (GHTreeEntry) getInput();
 		}
+		
+		ghte = (GHTreeEntry) getInput();
 		
 		return true;
 	}
