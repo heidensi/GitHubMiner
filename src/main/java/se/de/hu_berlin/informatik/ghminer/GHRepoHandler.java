@@ -160,7 +160,7 @@ public class GHRepoHandler {
 			IOutputPathGenerator<Path> generator = new OutputPathGenerator(repOutput, extension, true);
 			
 			new ThreadedListProcessorModule<Object>(executor.getExecutorService(), GHDownloadFilesCall.class,
-					generator).submitAndStart(allEntries);
+					generator, aRepo.getFullName(), aRepo.getDefaultBranch() ).submitAndStart(allEntries);
 	
 		} catch (IOException e) {
 			log.error( "IOException during retrieving rescursive tree", e );

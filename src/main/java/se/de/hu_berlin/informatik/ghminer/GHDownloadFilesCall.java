@@ -20,8 +20,16 @@ import se.de.hu_berlin.informatik.utils.threadwalker.CallableWithPaths;
  */
 public class GHDownloadFilesCall extends CallableWithPaths<Object,Boolean> {
 
-	public GHDownloadFilesCall(IOutputPathGenerator<Path> outputPathGenerator) {
+	// we need to work around the malfunctioning url and create our own
+	private final static String PREFIX_URL = "https://raw.githubusercontent.com/";
+	private String branch = "master";
+	private String repoOwner = "";
+	
+	
+	public GHDownloadFilesCall(IOutputPathGenerator<Path> outputPathGenerator, String aRepoUser, String aBranch) {
 		super(outputPathGenerator);
+		repoOwner = aRepoUser.endsWith( "/" ) ? aRepoUser : aRepoUser + "/";
+		branch = aBranch.endsWith( "/" ) ? aBranch : aBranch + "/";
 	}
 
 	public static Logger log = LoggerFactory.getLogger( GHDownloadFilesCall.class );;
@@ -33,19 +41,21 @@ public class GHDownloadFilesCall extends CallableWithPaths<Object,Boolean> {
 	@Override
 	public Boolean call() throws Exception {
 		
-		log.info( "Downloading files into " + getOutputPath() );
+		String downloadURLRoot = PREFIX_URL + repoOwner + branch;
+		String downloadURL = "";
+
 		GHTreeEntry ghte = (GHTreeEntry) getInput();
 		while( ghte != null ) {
 
 			FileOutputStream fos = null;
 			
 			try {
-				
 				File tar_f = getOutputPath().toFile();
 				
 				// to download from this url seems to be forbidden
-				log.info( "Downloading " + ghte.getPath() + " from " + ghte.getUrl());
-				URL website = ghte.getUrl();
+				downloadURL = downloadURLRoot + ghte.getPath();
+				log.info( "Downloading " + downloadURL + " to " + tar_f);
+				URL website = new URL( downloadURL );
 				ReadableByteChannel rbc = Channels.newChannel( website.openStream() );
 				fos = new FileOutputStream( tar_f );
 				fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);	
