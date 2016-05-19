@@ -29,16 +29,12 @@ public class GHGetRepos {
 		ghrsb.language(  aOptions.getOptionValue( GHOptions.LANG, GHOptions.DEF_LANG ) );
 		// restricting the number of stars already reduces the number of repositories greatly
 		ghrsb.q( "stars:>=" +  aOptions.getOptionValue( GHOptions.MIN_STARS, GHOptions.DEF_MINSTARS ) );
-		// sorting can be done by stars, forked and updated
+		// sorting can be done by stars, forked and updated TODO
 		ghrsb.sort( GHRepositorySearchBuilder.Sort.STARS );
 
 		PagedSearchIterable<GHRepository> result = ghrsb.list();
 		
-		if( result.getTotalCount() > 0 ) {
-			log.info( "Found " + result.getTotalCount() + " repository that matched the query.");
-		} else {
-			log.info( "Found no repositories that matched the query..." );
-		}
+		log.info( "Found " + result.getTotalCount() + " repository that matched the query.");
 		
 		return result;
 	}

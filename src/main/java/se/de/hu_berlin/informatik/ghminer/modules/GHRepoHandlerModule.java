@@ -10,13 +10,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHContentSearchBuilder;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTree;
 import org.kohsuke.github.GHTreeEntry;
 import org.kohsuke.github.GitHub;
-import org.kohsuke.github.PagedSearchIterable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,11 +34,11 @@ public class GHRepoHandlerModule extends AModule<GHRepository,List<GHTreeEntryWr
 	private Logger log = LoggerFactory.getLogger( GHRepoHandlerModule.class );
 	private GitHub aGitHub = null;
 	private String extension = null;
-	private String bl = "";
+//	private String bl = "";
 	private int repoCounter = 0;
 	private String targetDir;
 	// 100 is the max and this should be a constant somewhere in this object
-	private final static int MAX_PAGE_SIZE = 100;
+//	private final static int MAX_PAGE_SIZE = 100;
 	
 	// for parsing the trees
 	private final static String TREE_TYPE_TREE = "tree";
@@ -60,7 +57,7 @@ public class GHRepoHandlerModule extends AModule<GHRepository,List<GHTreeEntryWr
 		//if this module needs an input item
 		super(true);
 		this.extension = extension;
-		this.bl = bl;
+//		this.bl = bl;
 		this.aGitHub = aGitHub;
 		this.targetDir = targetDir;
 	}
@@ -81,42 +78,44 @@ public class GHRepoHandlerModule extends AModule<GHRepository,List<GHTreeEntryWr
 	 * A collection containing all results that match the filter (or null in the case of an error or no found files)
 	 */
 	private List<GHTreeEntryWrapper> handleRepo( GitHub aGitHub, GHRepository aRepo) {
-		log.info( "Handling " + ++repoCounter + " repository object " + 
+		log.info( "Handling " + ++repoCounter + ". repository object: " + 
 				aRepo.getFullName() + " / " + aRepo.getSvnUrl() );
 		
-		// because there is no reset for the query the searcher has to be recreated for each repo
-		GHContentSearchBuilder ghcsb = aGitHub.searchContent();
-		ghcsb.repo( aRepo.getFullName() );
-		if( extension != null ) {
-			ghcsb.extension( extension );
-		}
-		
-		PagedSearchIterable<GHContent> psi = ghcsb.list();
-		psi.withPageSize( MAX_PAGE_SIZE );
-		int numberUnfilteredFiles = psi.getTotalCount();
-		
-		// check if the black list parameter
-		ghcsb.q( bl );
-		
-		psi = ghcsb.list();
-		psi.withPageSize( MAX_PAGE_SIZE );
-		int numberFilteredFiles = psi.getTotalCount();
-		
-		log.info( "Found " + numberFilteredFiles + " valid files (invalid:" + 
-				(numberUnfilteredFiles - numberFilteredFiles) + ") to download in repository " + aRepo.getName() );
-		
-		// abort if there are no files
-		if( numberFilteredFiles == 0 ) {
-			return null;
-		}
-		
-		// check if the ratio is good enough to download the valid files
-		// TODO rework this maybe add an option for it or remove it completely
-		if( (double) numberFilteredFiles / (double) numberUnfilteredFiles < 0.8 ) {
-			log.info( "The ratio from valid to invalid files was too bad and no files will be downloaded from " +
-						aRepo.getFullName() );
-			return null;
-		}
+//		// because there is no reset for the query the searcher has to be recreated for each repo
+//		GHContentSearchBuilder ghcsb = aGitHub.searchContent();
+//		ghcsb.repo( aRepo.getFullName() );
+//		if( extension != null ) {
+//			ghcsb.extension( extension );
+//		}
+//		
+//		PagedSearchIterable<GHContent> psi = ghcsb.list();
+//		psi.withPageSize( MAX_PAGE_SIZE );
+//		int allMatchedFiles = psi.getTotalCount();
+//		
+//		log.info( "Found " + allMatchedFiles + " matching files to download in repository " + aRepo.getName() );
+//		
+//		// check if the black list parameter
+//		ghcsb.q( bl );
+//		
+//		psi = ghcsb.list();
+//		psi.withPageSize( MAX_PAGE_SIZE );
+//		int notBlacklistedFiles = psi.getTotalCount();
+//		
+//		log.info( "Found " + notBlacklistedFiles + " valid files (invalid:" + 
+//				(allMatchedFiles - notBlacklistedFiles) + ") to download in repository " + aRepo.getName() );
+//		
+//		// abort if there are no matching files
+//		if( allMatchedFiles == 0 ) {
+//			return null;
+//		}
+//		
+//		// check if the ratio is good enough to download the valid files
+//		// TODO rework this maybe add an option for it or remove it completely
+//		if( (double) notBlacklistedFiles / (double) allMatchedFiles < 0.8 ) {
+//			log.info( "The ratio from valid to invalid files was too bad and no files will be downloaded from " +
+//						aRepo.getFullName() );
+//			return null;
+//		}
 
 		return handleRepoAsTree( aRepo );
 	}
@@ -135,8 +134,7 @@ public class GHRepoHandlerModule extends AModule<GHRepository,List<GHTreeEntryWr
 			List<GHTreeEntryWrapper> allEntries = new LinkedList<GHTreeEntryWrapper>();
 			findAllFilesInTree( allEntries, aRepo.getTreeRecursive( aRepo.getDefaultBranch(), 1 ), aRepo, generator );
 			
-			log.info( "Found " + allEntries.size() + " files while parsing the tree for " +
-						"repo " + aRepo.getName() );
+			log.info( "Found " + allEntries.size() + " matching files in repository " + aRepo.getName() );
 			return allEntries;
 		} catch (IOException e) {
 			log.error( "IOException during retrieving rescursive tree", e );

@@ -61,7 +61,6 @@ public class GitHubMiner {
 			
 			findAllFilesInAllRepos( gh, allRepos );
 			
-			log.info( "Finished downloading of all files" );
 		} catch (IOException e) {
 			// this is not very specific...
 			log.error( "IOException..." , e );
