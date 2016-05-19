@@ -1,7 +1,7 @@
 package se.de.hu_berlin.informatik.ghminer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import se.de.hu_berlin.informatik.utils.optionparser.OptionParser;
 
@@ -29,7 +29,7 @@ public class GHOptions {
 	public final static String DEF_MAX_REPOS = "100"; // has to be convertable to an integer
 	public final static String DEF_MAX_DL_THREADS = "20";
 	
-	private static Logger log = LoggerFactory.getLogger( "OptionParser" );
+//	private static Logger log = LoggerFactory.getLogger( "OptionParser" );
 	
 	/**
 	 * Parses the options from the command line.
@@ -54,38 +54,38 @@ public class GHOptions {
 
         options.parseCommandLine();
         
-        printReadOptions( options );
+//        printReadOptions( options );
         
         return options;
 	}
 	
-	/**
-	 * Just to see that the option handling was successful
-	 * @param aOP An option parser object after the parsing of the command line
-	 */
-	private static void printReadOptions( OptionParser aOP ) {
-		log.info( "Found option " + OUTPUT_DIR + " " + aOP.getOptionValue( OUTPUT_DIR ));
-		log.info( "Found option " + USER + " " + aOP.getOptionValue( USER ));
-		log.info( "Found option " + PWD + " *********");
-
-		printOptionStatus( BLACKLIST, aOP );
-		printOptionStatus( LANG, aOP );
-		printOptionStatus( EXTENSION, aOP );
-		printOptionStatus( MIN_STARS, aOP );
-		printOptionStatus( MAX_REPOS, aOP );
-	}
-	
-	/**
-	 * Prints if the option was set or not
-	 * @param aOption The key for the option in the parser object
-	 * @param aOP The option parser object
-	 */
-	private static void printOptionStatus( String aOption, OptionParser aOP ) {
-		if( aOP.hasOption( aOption ) ) {
-			log.info( "Found option " + aOption + " " + aOP.getOptionValue( aOption ));
-		} else {
-			log.info( "No option was set for " + aOption );
-		}
-	}
+//	/**
+//	 * Just to see that the option handling was successful
+//	 * @param aOP An option parser object after the parsing of the command line
+//	 */
+//	private static void printReadOptions( OptionParser aOP ) {
+//		log.info( "Found option " + OUTPUT_DIR + " " + aOP.getOptionValue( OUTPUT_DIR ));
+//		log.info( "Found option " + USER + " " + aOP.getOptionValue( USER ));
+//		log.info( "Found option " + PWD + " *********");
+//
+//		printOptionStatus( BLACKLIST, aOP );
+//		printOptionStatus( LANG, aOP );
+//		printOptionStatus( EXTENSION, aOP );
+//		printOptionStatus( MIN_STARS, aOP );
+//		printOptionStatus( MAX_REPOS, aOP );
+//	}
+//	
+//	/**
+//	 * Prints if the option was set or not
+//	 * @param aOption The key for the option in the parser object
+//	 * @param aOP The option parser object
+//	 */
+//	private static void printOptionStatus( String aOption, OptionParser aOP ) {
+//		if( aOP.hasOption( aOption ) ) {
+//			log.info( "Found option " + aOption + " " + aOP.getOptionValue( aOption ));
+//		} else {
+//			log.info( "No option was set for " + aOption );
+//		}
+//	}
 	
 }
