@@ -100,7 +100,7 @@ public class GHConnectionBuilder {
 				updateGitHubProps( token );
 					
 			} else {
-				log.info( "Using the default auth token because no credentials were provided." );
+				log.info( "Using the default (shared) auth token because no credentials were provided. Download rate may be slower." );
 				return GitHub.connectUsingOAuth( DEFAULT_TOKEN );
 			}
 		

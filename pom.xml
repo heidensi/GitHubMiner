@@ -122,7 +122,7 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>se.de.hu_berlin.informatik.ghminer.GitHubDownloader</mainClass>
+									<mainClass>se.de.hu_berlin.informatik.ghminer.GitHubMiner</mainClass>
 								</transformer>
 							</transformers>
 							<minimizeJar>true</minimizeJar>

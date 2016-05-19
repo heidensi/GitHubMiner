@@ -39,18 +39,18 @@ public class GHOptions {
 	 * an {@link OptionParser} object that provides access to all parsed options and their values
 	 */
 	public static OptionParser getOptions(String[] args) {
-		final String tool_usage = "GitHubDownloader";
+		final String tool_usage = "GitHubMiner";
 		final OptionParser options = new OptionParser(tool_usage, args);
 
-		options.add(OUTPUT_DIR, "output", true, "Path to output directory with all downloaded files", true);
-		options.add(USER, "user", true, "The user name to authenticate against the git hub", true );
-		options.add(PWD, "password", true, "The password to authenticate against the git hub", true );
-		options.add(BLACKLIST, "blacklist", true, "The blacklist to filter unwanted repositories. Use it like \"bl=NOT android\"", false );
-		options.add(EXTENSION, "extensions", true, "The filter to only download files with a certain suffix. Default is \".java\"", false );
-		options.add(LANG, "language", true, "The language of the code. Default is java", false );
-		options.add(MIN_STARS, "minimalStars", true, "The minimum of stars that a project has to have.", false );
-		options.add(MAX_REPOS , "maxNumberOfRepos", true, "The maximum number as integer of repositories that will be used", false );
-		options.add(MAX_DL_THREADS , "maxNumberOfDLThreads", true, "The maximum number of download threads that will be used", false );
+		options.add(OUTPUT_DIR, "output", true, "Path to output directory with all downloaded files.", true);
+		options.add(USER, "user", true, "The user name to authenticate against GitHub. Should be provided together with a password at least once to generate an authentication token.");
+		options.add(PWD, "password", true, "The password to authenticate against GitHub. Should be provided toether with a user name at least once to generate an authentication token.");
+		options.add(BLACKLIST, "blacklist", true, "The blacklist to filter unwanted repositories. Use it like \"bl=NOT android\" (which is also the default).", false );
+		options.add(EXTENSION, "extensions", true, "The filter to only download files with a certain suffix. Default is \".java\".", false );
+		options.add(LANG, "language", true, "The language of the mined repositories. Default is Java.", false );
+		options.add(MIN_STARS, "minimalStars", true, "The minimum of stars that a project has to have. Default is 10.", false );
+		options.add(MAX_REPOS , "maxNumberOfRepos", true, "The maximum number of repositories that will be used. Default is 100.", false );
+		options.add(MAX_DL_THREADS , "maxNumberOfDLThreads", true, "The maximum number of download threads that will be used. Default is 20.", false );
 
         options.parseCommandLine();
         

@@ -17,8 +17,7 @@ public class GHGetRepos {
 	 * Connects to the git hub and asks for a list of repositories that fulfill the
 	 * specified demands
 	 * @param aGitHub The git hub to connect to
-	 * @param aProps A properties map with parameters for blacklist, language and minimal
-	 * 	number of stars a project has to have
+	 * @param aOptions The parsed options
 	 * @return An iterator with all repositories that the git hub could return
 	 */
 	public static PagedSearchIterable<GHRepository> findRepos( GitHub aGitHub, OptionParser aOptions ) {

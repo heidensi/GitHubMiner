@@ -1,11 +1,13 @@
-package se.de.hu_berlin.informatik.ghminer;
+/**
+ * 
+ */
+package se.de.hu_berlin.informatik.ghminer.modules;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.kohsuke.github.GHContent;
@@ -14,32 +16,30 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTree;
 import org.kohsuke.github.GHTreeEntry;
 import org.kohsuke.github.GitHub;
-import org.kohsuke.github.PagedIterator;
 import org.kohsuke.github.PagedSearchIterable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import se.de.hu_berlin.informatik.ghminer.GHTreeEntryWrapper;
 import se.de.hu_berlin.informatik.utils.miscellaneous.IOutputPathGenerator;
 import se.de.hu_berlin.informatik.utils.miscellaneous.OutputPathGenerator;
-import se.de.hu_berlin.informatik.utils.optionparser.OptionParser;
-import se.de.hu_berlin.informatik.utils.threadwalker.ExecutorServiceProvider;
-import se.de.hu_berlin.informatik.utils.tm.modules.ThreadedListProcessorModule;
+import se.de.hu_berlin.informatik.utils.tm.moduleframework.AModule;
 
 /**
  * The repository handler searches for the source code files in a given
- * set of repositories and analyzes if they meat the desired requirements.
- * In case they do download threads will be triggered that store the files
- * in the target directory.
+ * set of repositories and analyzes if they meet the desired requirements.
+ * In case they do, they are returned in a list.
+ * 
+ * @author Roy Lieck, Simon Heiden
  */
-public class GHRepoHandler {
+public class GHRepoHandlerModule extends AModule<GHRepository,List<GHTreeEntryWrapper>> {
 
-	private Logger log = LoggerFactory.getLogger( GHRepoHandler.class );
+	private Logger log = LoggerFactory.getLogger( GHRepoHandlerModule.class );
+	private GitHub aGitHub = null;
 	private String extension = null;
 	private String bl = "";
-	private String targetDir = "";
-	private String FILE_SEP = System.getProperty( "file.separator" );
 	private int repoCounter = 0;
-	private int maxDLThreads = 20;
+	private String targetDir;
 	// 100 is the max and this should be a constant somewhere in this object
 	private final static int MAX_PAGE_SIZE = 100;
 	
@@ -47,61 +47,40 @@ public class GHRepoHandler {
 	private final static String TREE_TYPE_TREE = "tree";
 	private final static String TREE_TYPE_FILE = "blob";
 	
-	private ExecutorServiceProvider executor = null;
-	
 	/**
-	 * Constructor
-	 * @param aOptions all options
-	 */
-	public GHRepoHandler( OptionParser aOptions ) {		
-		extension = aOptions.getOptionValue( GHOptions.EXTENSION, GHOptions.DEF_EXTENSION );
-		bl = aOptions.getOptionValue( GHOptions.BLACKLIST, GHOptions.DEF_BLACKLIST );
-		
-		maxDLThreads = Integer.parseInt( aOptions.getOptionValue( GHOptions.MAX_DL_THREADS, GHOptions.DEF_MAX_DL_THREADS ) );
-		
-		// these threads will be needed for downloading the files
-		executor = new ExecutorServiceProvider(maxDLThreads);
-		
-		targetDir = aOptions.getOptionValue( GHOptions.OUTPUT_DIR );
-		targetDir = targetDir.endsWith( FILE_SEP ) ? targetDir :
-			targetDir + FILE_SEP;
-	}
-	
-	/**
-	 * Starts the search for all files that are of interest.
 	 * @param aGitHub The git hub object
-	 * @param aOptions The arguments including credentials
-	 * @param aPsi The paged results for the repositories
+	 * @param targetDir
+	 * the main output directory
+	 * @param extension
+	 * an extension that should be matching with downloaded files
+	 * @param bl
+	 * blacklist option argument
 	 */
-	public void findAllFilesInAllRepos( GitHub aGitHub, OptionParser aOptions, 
-			PagedSearchIterable<GHRepository> aPsi ) {
-		
-		PagedIterator<GHRepository> pi = aPsi.iterator();
-		
-		File tDir_f = new File ( targetDir );
-		if( !tDir_f.exists() ) {
-			tDir_f.mkdirs();
-		}
-
-		int maxHandles = Integer.parseInt( aOptions.getOptionValue( GHOptions.MAX_REPOS, GHOptions.DEF_MAX_REPOS ) );
-		log.info( "Reducing the number of repositories to " + maxHandles );
-		
-		while( pi.hasNext() && --maxHandles > -1 ) {
-			handleRepo( aGitHub, pi.next() );
-		}
-
-		//we are done! Shutdown of the executor service is necessary! (That means: No new task submissions!)
-		log.info( "Finished collecting all files. Waiting for download threads to complete");
-		executor.shutdownAndWaitForTermination();
-		log.info( "Finished all downloads");
+	public GHRepoHandlerModule(GitHub aGitHub, String targetDir, String extension, String bl ) {				
+		//if this module needs an input item
+		super(true);
+		this.extension = extension;
+		this.bl = bl;
+		this.aGitHub = aGitHub;
+		this.targetDir = targetDir;
 	}
+
+	/* (non-Javadoc)
+	 * @see se.de.hu_berlin.informatik.utils.tm.ITransmitter#processItem(java.lang.Object)
+	 */
+	public List<GHTreeEntryWrapper> processItem(GHRepository repo) {
+		return handleRepo(aGitHub, repo);
+	}
+
 	
 	/**
 	 * Inspects the given repository object
 	 * @param aGitHub The git hub object
-	 * @param aRepo A repository from the iterator
+	 * @param aRepo A git hub repository object
+	 * @return
+	 * A collection containing all results that match the filter (or null in the case of an error or no found files)
 	 */
-	private void handleRepo( GitHub aGitHub, GHRepository aRepo ) {
+	private List<GHTreeEntryWrapper> handleRepo( GitHub aGitHub, GHRepository aRepo) {
 		log.info( "Handling " + ++repoCounter + " repository object " + 
 				aRepo.getFullName() + " / " + aRepo.getSvnUrl() );
 		
@@ -124,47 +103,45 @@ public class GHRepoHandler {
 		int numberFilteredFiles = psi.getTotalCount();
 		
 		log.info( "Found " + numberFilteredFiles + " valid files (invalid:" + 
-				(numberUnfilteredFiles - numberFilteredFiles) + ") to download in repo " + aRepo.getName() );
+				(numberUnfilteredFiles - numberFilteredFiles) + ") to download in repository " + aRepo.getName() );
 		
 		// abort if there are no files
 		if( numberFilteredFiles == 0 ) {
-			return;
+			return null;
 		}
 		
 		// check if the ratio is good enough to download the valid files
 		// TODO rework this maybe add an option for it or remove it completely
 		if( (double) numberFilteredFiles / (double) numberUnfilteredFiles < 0.8 ) {
-			log.info( "The ratio from valid to invalid files was to bad and no files will be downloaded from " +
+			log.info( "The ratio from valid to invalid files was too bad and no files will be downloaded from " +
 						aRepo.getFullName() );
-			return;
+			return null;
 		}
 
-		handleRepoAsTree( aRepo );
+		return handleRepoAsTree( aRepo );
 	}
 	
 	/**
 	 * Tries to get all files from the repository by accessing it using the tree data structure.
-	 * @param aRootDirName The target directory for all files
 	 * @param aRepo The repository object
+	 * @return
+	 * A collection containing all results that match the filter (or null in the case of an error)
 	 */
-	private void handleRepoAsTree( GHRepository aRepo ) {
+	private List<GHTreeEntryWrapper> handleRepoAsTree( GHRepository aRepo ) {
+		Path repOutput = Paths.get( targetDir, aRepo.getFullName().replace( "/" , "_").replace( "\\", "_") );
+		IOutputPathGenerator<Path> generator = new OutputPathGenerator(repOutput, extension, true);
+		
 		try {
-			List<GHTreeEntry> allEntries = new ArrayList<GHTreeEntry>();
-			findAllFilesInTree( allEntries, aRepo.getTreeRecursive( aRepo.getDefaultBranch(), 1 ), aRepo );
+			List<GHTreeEntryWrapper> allEntries = new LinkedList<GHTreeEntryWrapper>();
+			findAllFilesInTree( allEntries, aRepo.getTreeRecursive( aRepo.getDefaultBranch(), 1 ), aRepo, generator );
 			
 			log.info( "Found " + allEntries.size() + " files while parsing the tree for " +
 						"repo " + aRepo.getName() );
-			
-			// pack all files and make them persistent
-			Path repOutput = Paths.get( targetDir, aRepo.getFullName().replace( "/" , "_").replace( "\\", "_") );
-			IOutputPathGenerator<Path> generator = new OutputPathGenerator(repOutput, extension, true);
-			
-			new ThreadedListProcessorModule<Object>(executor.getExecutorService(), GHDownloadFilesCall.class,
-					generator, aRepo.getFullName(), aRepo.getDefaultBranch() ).submitAndStart(allEntries);
-	
+			return allEntries;
 		} catch (IOException e) {
 			log.error( "IOException during retrieving rescursive tree", e );
 		}
+		return null;
 	}
 	
 	/**
@@ -175,13 +152,13 @@ public class GHRepoHandler {
 	 * @param aTree The tree object
 	 * @param aRepo The repository object
 	 */
-	private void findAllFilesInTree( Collection<GHTreeEntry> aAllEntries, GHTree aTree, GHRepository aRepo ) {
+	private void findAllFilesInTree( Collection<GHTreeEntryWrapper> aAllEntries, GHTree aTree, GHRepository aRepo, IOutputPathGenerator<Path> generator ) {
 		if( aTree.isTruncated() ) {
 			log.info( "The tree " + aTree.getUrl() + " was truncated and will be reduced" +
 						" to a normal tree" );
 			try {
 				// switch to normal tree handling
-				findAllFilesInNormalTree( aAllEntries, aRepo.getTree( aTree.getSha() ), aRepo);
+				findAllFilesInNormalTree( aAllEntries, aRepo.getTree( aTree.getSha() ), aRepo, generator);
 			} catch (IOException e) {
 				log.error( "IOException while parsing tree for " + aRepo.getName(), e );
 			}
@@ -191,7 +168,7 @@ public class GHRepoHandler {
 				if( node.getType().equals( TREE_TYPE_FILE ) ) {
 					// add it if it fits the extension
 					if( node.getPath().endsWith( extension ) ) {
-						aAllEntries.add( node );
+						aAllEntries.add( new GHTreeEntryWrapper(node, generator.getNewOutputPath(), aRepo) );
 					}
 				}
 			}
@@ -208,7 +185,7 @@ public class GHRepoHandler {
 	 * @param aTree The tree object
 	 * @param aRepo The repository object
 	 */
-	private void findAllFilesInNormalTree( Collection<GHTreeEntry> aAllEntries, GHTree aTree, GHRepository aRepo ) {
+	private void findAllFilesInNormalTree( Collection<GHTreeEntryWrapper> aAllEntries, GHTree aTree, GHRepository aRepo, IOutputPathGenerator<Path> generator ) {
 		
 		// a normal tree is never truncated and therefore needs no check
 		
@@ -216,12 +193,12 @@ public class GHRepoHandler {
 			if( node.getType().equals( TREE_TYPE_FILE ) ) {
 				// add it if it fits the extension
 				if( node.getPath().endsWith( extension ) ) {
-					aAllEntries.add( node );
+					aAllEntries.add( new GHTreeEntryWrapper(node, generator.getNewOutputPath(), aRepo) );
 				}
 			} else if ( node.getType().equals( TREE_TYPE_TREE ) ) {
 				try {
 					// assume it is a non truncated recursive tree and switch if proven wrong
-					findAllFilesInTree( aAllEntries, aRepo.getTree( node.getSha() ), aRepo );
+					findAllFilesInTree( aAllEntries, aRepo.getTree( node.getSha() ), aRepo, generator );
 				} catch (IOException e) {
 					log.error( "IOException while parsing tree for " + aRepo.getName(), e );
 				}
