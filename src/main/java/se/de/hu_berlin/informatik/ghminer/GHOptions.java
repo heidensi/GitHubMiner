@@ -25,8 +25,8 @@ public class GHOptions {
 	public final static String DEF_LANG = "Java";
 	public final static String DEF_EXTENSION = ".java";
 	public final static String DEF_BLACKLIST = "NOT android";
-	public final static String DEF_MINSTARS = "10";
-	public final static String DEF_MAX_REPOS = "100"; // has to be convertable to an integer
+	public final static String DEF_MINSTARS = "50";
+	public final static String DEF_MAX_REPOS = "5000"; // has to be convertable to an integer
 	public final static String DEF_MAX_DL_THREADS = "20";
 	
 //	private static Logger log = LoggerFactory.getLogger( "OptionParser" );

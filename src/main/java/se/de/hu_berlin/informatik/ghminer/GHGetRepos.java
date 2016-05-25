@@ -1,10 +1,12 @@
 package se.de.hu_berlin.informatik.ghminer;
 
-import java.util.List;
+import java.util.HashSet;
 
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHRepositorySearchBuilder;
 import org.kohsuke.github.GitHub;
+import org.kohsuke.github.PagedIterator;
+import org.kohsuke.github.PagedSearchIterable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +18,17 @@ public class GHGetRepos {
 	private static Logger log = LoggerFactory.getLogger( GHGetRepos.class );
 	public final static int NO_UPPER_BOUND = -1;
 	private final static int MAX_RESULTS_PER_QUERY = 1000;
+	private final static int MAX_PAGE_SIZE = 100;
+	
+	// after all results from one request are processed the upper limit
+	// of stars will be increased to catch repositories which watcher numbers
+	// are affected by current changes (increase of own or decrease of other)
+	private final static int STARS_BUFFER = 10;
+	
+	// this set is used to make sure that no duplicates are downloaded
+	private static HashSet<String> alreadyReadRepos = new HashSet<String>();
+	private static int reposProcessed = 0;
+	private static int maxRepos = 0;
 	
 	/**
 	 * Connects to the git hub and asks for a list of repositories that fulfill the
@@ -26,6 +39,10 @@ public class GHGetRepos {
 	 * @return An iterator with all repositories that the git hub could return
 	 */
 	public static void findRepos( GitHub aGitHub, OptionParser aOptions, PipeLinker aLinker ) {
+		reposProcessed = 0;
+		maxRepos = Integer.parseInt( aOptions.getOptionValue( GHOptions.MAX_REPOS, GHOptions.DEF_MAX_REPOS ) );
+		alreadyReadRepos.clear();
+		
 		findRepos( aGitHub, aOptions, aLinker, NO_UPPER_BOUND );
 	}
 	
@@ -58,28 +75,36 @@ public class GHGetRepos {
 		// sorting can be done by stars, forked and updated
 		ghrsb.sort( GHRepositorySearchBuilder.Sort.STARS );
 
-		List<GHRepository> result = ghrsb.list().asList();
-		log.info( "Found " + result.size() + " repository that matched the query.");
+		PagedSearchIterable<GHRepository> result_it = ghrsb.list();
+		result_it.withPageSize( MAX_PAGE_SIZE );
+		int totalCount = result_it.getTotalCount();
+		log.info( "Found " + totalCount + " repositories that matched the query.");
 		
-		if( result.size() >= MAX_RESULTS_PER_QUERY ) {
-			// we need to split the result at the stars value of the last entries
-			// to not lose or duplicate repositories with identical stars the last value
-			// will only be used by the next call
-			int lastStarsValue = result.get(MAX_RESULTS_PER_QUERY - 1 ).getWatchers();
-			for( GHRepository ghr : result ) {
-				if( ghr.getWatchers() > lastStarsValue ) {
-					aLinker.submit( ghr );
-				}
-			}
+		PagedIterator<GHRepository> pi_it = result_it.iterator();
+		GHRepository repo = null;
+		
+		while( pi_it.hasNext() ) {
+			repo = pi_it.next();
 			
-			// request the next 1000 repos
-			log.info( "Asking for more repositories..." );
-			findRepos( aGitHub, aOptions, aLinker, lastStarsValue );
-		} else {
-			// submit all of them
-			for( GHRepository ghr : result ) {
-				aLinker.submit(ghr);
+			if( reposProcessed < maxRepos ) {
+				if( !alreadyReadRepos.contains( repo.getFullName() ) ) {
+					alreadyReadRepos.add( repo.getFullName() );
+					aLinker.submit( repo );
+					reposProcessed++;
+				}
+			} else {
+				// we already processed at much repositories as necessary and can return
+				return;
 			}
+		}
+		
+		// we finished the processing of some repositories and may need to ask for more
+		// check the stars of the last repo that was handled
+		if( totalCount >= MAX_RESULTS_PER_QUERY && repo != null ) {
+			int upperBound = repo.getWatchers() + STARS_BUFFER;
+			log.info( "Asking for more repositories. This time with an upper bound of " +
+					upperBound );
+			findRepos( aGitHub, aOptions, aLinker, upperBound );
 		}
 	}	
 }
