@@ -3,10 +3,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
-import org.kohsuke.github.PagedIterator;
-import org.kohsuke.github.PagedSearchIterable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,10 +53,8 @@ public class GitHubMiner {
 			
 			log.info( "Connected to git hub with a rate limit of: " + 
 					gh.getRateLimit().limit + " per hour" );
-			
-			PagedSearchIterable<GHRepository> allRepos = GHGetRepos.findRepos( gh, options );
-			
-			findAllFilesInAllRepos( gh, allRepos );
+					
+			findAllFilesInAllRepos( gh );
 			
 		} catch (IOException e) {
 			// this is not very specific...
@@ -70,10 +65,8 @@ public class GitHubMiner {
 	/**
 	 * Starts the search for all files that are of interest.
 	 * @param aGitHub The git hub object
-	 * @param allRepos The paged results for the repositories
 	 */
-	private void findAllFilesInAllRepos( GitHub aGitHub, 
-			PagedSearchIterable<GHRepository> allRepos ) {
+	private void findAllFilesInAllRepos( GitHub aGitHub ) {
 		
 		String targetDir = options.getOptionValue( GHOptions.OUTPUT_DIR );
 		targetDir = targetDir.endsWith( FILE_SEP ) ? targetDir :
@@ -83,8 +76,6 @@ public class GitHubMiner {
 		String extension = options.getOptionValue( GHOptions.EXTENSION, GHOptions.DEF_EXTENSION );
 		String bl = options.getOptionValue( GHOptions.BLACKLIST, GHOptions.DEF_BLACKLIST );
 
-		PagedIterator<GHRepository> pi = allRepos.iterator();
-		
 		File tDir_f = new File ( targetDir );
 		if( !tDir_f.exists() ) {
 			tDir_f.mkdirs();
@@ -98,10 +89,8 @@ public class GitHubMiner {
 				new ListSequencerPipe<List<GHTreeEntryWrapper>,GHTreeEntryWrapper>(),
 				new ThreadedProcessorPipe<GHTreeEntryWrapper>(maxDLThreads, GHDownloadFilesCall.class));
 		
-		while( pi.hasNext() && --maxRepos > -1 ) {
-			linker.submit(pi.next());
-		}
-
+		GHGetRepos.findRepos( aGitHub, options, linker );
+		
 		log.info( "All repositories submitted. Waiting for shutdown...");
 		linker.waitForShutdown();
 		log.info( "Finished all downloads");

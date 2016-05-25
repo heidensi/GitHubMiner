@@ -64,37 +64,16 @@ public class GHConnectionBuilder {
 			if( aUser != null && aPwd != null ) {
 				log.info( "Creating a token using basic authentication" );
 				gh = GitHub.connectUsingPassword( aUser, aPwd );
-				
-				String note = TOKEN_NAME;
+
 				GHAuthorization gha = null;
 				
-				try{
-					gha = gh.createToken( null, note, null );
+				try{					
+					gha = gh.createToken( null, TOKEN_NAME, null );
 					token = gha.getToken();
 				} catch (IOException e ) {
-					// the easy generation did not work so we try until we get it right
-					int counter = 1;
-					String newNote = note;
-					while( true ) {
-						try {
-							log.info( "Could not create auth token " + newNote + ". Trying to create a new one" );
-							newNote = note + "_" + ++counter;
-							gha = gh.createToken( null, note, null );
-							token = gha.getToken();
-							break;
-						} catch (IOException ee ) {
-							// this token did not work either. I wish there would be a better way...
-							if( counter > 10 ) {
-								log.error( "Aborting the token generation...", ee);
-								log.error( "Please delete the auth token " + TOKEN_NAME + " from your profile");
-								token = DEFAULT_TOKEN;
-								break;
-							}
-							
-							log.error( "This is the error: ", e);
-							continue;
-						}
-					}
+					log.error( "Aborting the token generation...  Using the default (shared) token...", e);
+					log.error( "Please delete the auth token " + TOKEN_NAME + " from your profile");
+					token = DEFAULT_TOKEN;
 				}
 				
 				updateGitHubProps( token );
