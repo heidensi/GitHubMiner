@@ -9,7 +9,7 @@ import java.nio.channels.ReadableByteChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import se.de.hu_berlin.informatik.utils.threadwalker.CallableWithPaths;
+import se.de.hu_berlin.informatik.utils.threaded.CallableWithPaths;
 
 /**
  * A simple thread to download a set of files from git hub
