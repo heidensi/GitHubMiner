@@ -4,7 +4,7 @@
 	<groupId>GitHubTools</groupId>
 	<artifactId>GitHubMiner</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>GitHubDownloader</name>
+	<name>GitHubMiner</name>
 	<description>A search tool to connect to git hub and download files</description>
 
 	<dependencies>

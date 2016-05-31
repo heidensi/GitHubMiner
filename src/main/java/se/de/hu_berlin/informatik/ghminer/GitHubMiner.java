@@ -1,4 +1,5 @@
 package se.de.hu_berlin.informatik.ghminer;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -14,85 +15,94 @@ import se.de.hu_berlin.informatik.utils.tm.pipes.ListSequencerPipe;
 import se.de.hu_berlin.informatik.utils.tm.pipes.ThreadedProcessorPipe;
 
 /**
- * A tool for downloading multiple source files from git hub.
+ * A tool for downloading multiple source files from git hub. By default this
+ * miner looks for the 5000 best rated java projects that do not have the
+ * keyword "android" in their description and tries to download all of their
+ * .java files from the master branch.
  */
 public class GitHubMiner {
 
-	private static Logger log = LoggerFactory.getLogger( GitHubMiner.class );
+	private static Logger log = LoggerFactory.getLogger(GitHubMiner.class);
 	private OptionParser options = null;
-	
+
 	private String FILE_SEP = File.separator;
-	
+
 	/**
-	 * Just the constructor
-	 * @param aArgs The arguments
+	 * The constructor that also inits the parsing of the arguments
+	 * 
+	 * @param aArgs
+	 *            The arguments
 	 */
-	public GitHubMiner( String[] aArgs ) {		
-		options = GHOptions.getOptions( aArgs );
+	public GitHubMiner(String[] aArgs) {
+		options = GHOptions.getOptions(aArgs);
 	}
-	
+
 	/**
-	 * Entry method
+	 * Entry method that starts the tool. If this miner is part of another
+	 * program use the method {@link #downloadFromGH() downloadFromGH} after
+	 * passing the options to the constructor.
+	 * 
 	 * @param args
-	 * the command line arguments
+	 *            the command line arguments
 	 */
 	public static void main(String[] args) {
-		GitHubMiner ghd = new GitHubMiner( args );
+		GitHubMiner ghd = new GitHubMiner(args);
 		ghd.downloadFromGH();
 	}
-	
+
 	/**
-	 * Connects to the git hub and triggers the download of all relevant files
+	 * Connects to the git hub and triggers the download of all relevant files.
 	 */
 	public void downloadFromGH() {
-		log.debug( "Started the github downloader" );
+		log.debug("Started the github downloader");
 		try {
-			String user = options.getOptionValue( GHOptions.USER );
-			String password = options.getOptionValue(GHOptions.PWD );
-			GitHub gh = GHConnectionBuilder.getConnection( user, password );
-			
-			log.info( "Connected to git hub with a rate limit of: " + 
-					gh.getRateLimit().limit + " per hour" );
-					
-			findAllFilesInAllRepos( gh );
-			
+			String user = options.getOptionValue(GHOptions.USER);
+			String password = options.getOptionValue(GHOptions.PWD);
+			GitHub gh = GHConnectionBuilder.getConnection(user, password);
+
+			log.info("Connected to git hub with a rate limit of: " + gh.getRateLimit().limit + " per hour");
+
+			findAllFilesInAllRepos(gh);
+
 		} catch (IOException e) {
 			// this is not very specific...
-			log.error( "IOException..." , e );
+			log.error("IOException...", e);
 		}
 	}
-	
-	/**
-	 * Starts the search for all files that are of interest.
-	 * @param aGitHub The git hub object
-	 */
-	private void findAllFilesInAllRepos( GitHub aGitHub ) {
-		
-		String targetDir = options.getOptionValue( GHOptions.OUTPUT_DIR );
-		targetDir = targetDir.endsWith( FILE_SEP ) ? targetDir :
-			targetDir + FILE_SEP;
-		
-		int maxDLThreads = Integer.parseInt( options.getOptionValue( GHOptions.MAX_DL_THREADS, GHOptions.DEF_MAX_DL_THREADS ) );
-		String extension = options.getOptionValue( GHOptions.EXTENSION, GHOptions.DEF_EXTENSION );
-		String bl = options.getOptionValue( GHOptions.BLACKLIST, GHOptions.DEF_BLACKLIST );
 
-		File tDir_f = new File ( targetDir );
-		if( !tDir_f.exists() ) {
+	/**
+	 * Starts the search for all files that are of interest. The output
+	 * directory will be created if it does not exist already.
+	 * 
+	 * @param aGitHub
+	 *            The git hub object
+	 */
+	private void findAllFilesInAllRepos(GitHub aGitHub) {
+
+		String targetDir = options.getOptionValue(GHOptions.OUTPUT_DIR);
+		targetDir = targetDir.endsWith(FILE_SEP) ? targetDir : targetDir + FILE_SEP;
+
+		int maxDLThreads = Integer
+				.parseInt(options.getOptionValue(GHOptions.MAX_DL_THREADS, GHOptions.DEF_MAX_DL_THREADS));
+		String extension = options.getOptionValue(GHOptions.EXTENSION, GHOptions.DEF_EXTENSION);
+		String bl = options.getOptionValue(GHOptions.BLACKLIST, GHOptions.DEF_BLACKLIST);
+
+		File tDir_f = new File(targetDir);
+		if (!tDir_f.exists()) {
 			tDir_f.mkdirs();
 		}
 
-		int maxRepos = Integer.parseInt( options.getOptionValue( GHOptions.MAX_REPOS, GHOptions.DEF_MAX_REPOS ) );
-		log.info( "Reducing the number of repositories to " + maxRepos );
-		
-		PipeLinker linker = new PipeLinker().link(
-				new GHRepoHandlerModule(aGitHub, targetDir, extension, bl),
-				new ListSequencerPipe<List<GHTreeEntryWrapper>,GHTreeEntryWrapper>(),
+		int maxRepos = Integer.parseInt(options.getOptionValue(GHOptions.MAX_REPOS, GHOptions.DEF_MAX_REPOS));
+		log.info("Reducing the number of repositories to " + maxRepos);
+
+		PipeLinker linker = new PipeLinker().link(new GHRepoHandlerModule(aGitHub, targetDir, extension, bl),
+				new ListSequencerPipe<List<GHTreeEntryWrapper>, GHTreeEntryWrapper>(),
 				new ThreadedProcessorPipe<GHTreeEntryWrapper>(maxDLThreads, GHDownloadFilesCall.class));
-		
-		GHGetRepos.findRepos( aGitHub, options, linker );
-		
-		log.info( "All repositories submitted. Waiting for shutdown...");
+
+		GHGetRepos.findRepos(aGitHub, options, linker);
+
+		log.info("All repositories submitted. Waiting for shutdown...");
 		linker.waitForShutdown();
-		log.info( "Finished all downloads");
+		log.info("Finished all downloads");
 	}
 }
