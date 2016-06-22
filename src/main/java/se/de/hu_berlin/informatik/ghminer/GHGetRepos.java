@@ -120,7 +120,7 @@ public class GHGetRepos {
 					reposProcessed++;
 				}
 			} else {
-				// we already processed at much repositories as necessary and
+				// we already processed as much repositories as necessary and
 				// can return
 				return;
 			}
