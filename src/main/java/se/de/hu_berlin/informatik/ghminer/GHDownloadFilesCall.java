@@ -30,8 +30,6 @@ public class GHDownloadFilesCall extends CallableWithPaths<GHTreeEntryWrapper, B
 	 */
 	@Override
 	public Boolean call() {
-		System.out.print(".");
-
 		GHTreeEntryWrapper ghte = getInput();
 		FileOutputStream fos = null;
 
