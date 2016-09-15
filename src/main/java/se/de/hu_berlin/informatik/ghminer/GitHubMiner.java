@@ -102,7 +102,7 @@ public class GitHubMiner {
 		GHGetRepos.findRepos(aGitHub, options, linker);
 
 		log.info("All repositories submitted. Waiting for shutdown...");
-		linker.waitForShutdown();
+		linker.shutdown();
 		log.info("Finished all downloads");
 	}
 }
