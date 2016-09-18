@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import se.de.hu_berlin.informatik.utils.miscellaneous.Log;
 import se.de.hu_berlin.informatik.utils.threaded.CallableWithPaths;
+import se.de.hu_berlin.informatik.utils.threaded.DisruptorEventHandler;
+import se.de.hu_berlin.informatik.utils.threaded.IDisruptorEventHandlerFactory;
 
 /**
  * A simple thread to download a file from git hub
@@ -19,8 +19,6 @@ public class GHDownloadFilesCall extends CallableWithPaths<GHTreeEntryWrapper, B
 	public GHDownloadFilesCall() {
 		super();
 	}
-
-	public Logger log = LoggerFactory.getLogger(GHDownloadFilesCall.class);
 
 	/**
 	 * Starts the download of a given GHTreeEntry into the target directory
@@ -45,7 +43,7 @@ public class GHDownloadFilesCall extends CallableWithPaths<GHTreeEntryWrapper, B
 			fos = new FileOutputStream(tar_f);
 			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 		} catch (IOException e) {
-			log.error("Error with content " + ghte.getDownloadURL(), e);
+			Log.err(this, e, "Error with content " + ghte.getDownloadURL());
 			return false;
 		} finally {
 			if (fos != null) {
@@ -60,4 +58,26 @@ public class GHDownloadFilesCall extends CallableWithPaths<GHTreeEntryWrapper, B
 		return true;
 	}
 
+	@Override
+	public void resetAndInit() {
+		//not needed
+	}
+
+	public static class Factory implements IDisruptorEventHandlerFactory<GHTreeEntryWrapper> {
+
+		public Factory() {
+			super();
+		}
+		
+		@Override
+		public Class<? extends DisruptorEventHandler<GHTreeEntryWrapper>> getEventHandlerClass() {
+			return GHDownloadFilesCall.class;
+		}
+
+		@Override
+		public DisruptorEventHandler<GHTreeEntryWrapper> newInstance() {
+			return new GHDownloadFilesCall();
+		}
+	}
+	
 }

@@ -5,10 +5,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.kohsuke.github.GitHub;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import se.de.hu_berlin.informatik.ghminer.modules.GHRepoHandlerModule;
+import se.de.hu_berlin.informatik.utils.miscellaneous.Log;
 import se.de.hu_berlin.informatik.utils.optionparser.OptionParser;
 import se.de.hu_berlin.informatik.utils.tm.pipeframework.PipeLinker;
 import se.de.hu_berlin.informatik.utils.tm.pipes.ListSequencerPipe;
@@ -22,7 +20,6 @@ import se.de.hu_berlin.informatik.utils.tm.pipes.ThreadedProcessorPipe;
  */
 public class GitHubMiner {
 
-	private static Logger log = LoggerFactory.getLogger(GitHubMiner.class);
 	private OptionParser options = null;
 
 	private String FILE_SEP = File.separator;
@@ -54,19 +51,19 @@ public class GitHubMiner {
 	 * Connects to the git hub and triggers the download of all relevant files.
 	 */
 	public void downloadFromGH() {
-		log.debug("Started the github downloader");
+		Log.out(this, "Started the github downloader");
 		try {
 			String user = options.getOptionValue(GHOptions.USER);
 			String password = options.getOptionValue(GHOptions.PWD);
 			GitHub gh = GHConnectionBuilder.getConnection(user, password);
 
-			log.info("Connected to git hub with a rate limit of: " + gh.getRateLimit().limit + " per hour");
+			Log.out(this, "Connected to git hub with a rate limit of: " + gh.getRateLimit().limit + " per hour");
 
 			findAllFilesInAllRepos(gh);
 
 		} catch (IOException e) {
 			// this is not very specific...
-			log.error("IOException...", e);
+			Log.err(this, e, "IOException...");
 		}
 	}
 
@@ -93,16 +90,16 @@ public class GitHubMiner {
 		}
 
 		int maxRepos = Integer.parseInt(options.getOptionValue(GHOptions.MAX_REPOS, GHOptions.DEF_MAX_REPOS));
-		log.info("Reducing the number of repositories to " + maxRepos);
+		Log.out(this, "Reducing the number of repositories to " + maxRepos);
 
 		PipeLinker linker = new PipeLinker().link(new GHRepoHandlerModule(aGitHub, targetDir, extension, bl),
 				new ListSequencerPipe<List<GHTreeEntryWrapper>, GHTreeEntryWrapper>(),
-				new ThreadedProcessorPipe<GHTreeEntryWrapper>(maxDLThreads, GHDownloadFilesCall.class).enableTracking(50));
+				new ThreadedProcessorPipe<GHTreeEntryWrapper>(maxDLThreads, new GHDownloadFilesCall.Factory()).enableTracking(50));
 
 		GHGetRepos.findRepos(aGitHub, options, linker);
 
-		log.info("All repositories submitted. Waiting for shutdown...");
+		Log.out(this, "All repositories submitted. Waiting for shutdown...");
 		linker.shutdown();
-		log.info("Finished all downloads");
+		Log.out(this, "Finished all downloads");
 	}
 }
