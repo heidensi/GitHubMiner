@@ -28,7 +28,7 @@
 
 		<dependency>
 			<groupId>se.de.hu_berlin.informatik</groupId>
-			<artifactId>utilities</artifactId>
+			<artifactId>framework</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>

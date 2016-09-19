@@ -7,14 +7,14 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import se.de.hu_berlin.informatik.utils.miscellaneous.Log;
-import se.de.hu_berlin.informatik.utils.threaded.CallableWithPaths;
+import se.de.hu_berlin.informatik.utils.threaded.ADisruptorEventHandlerFactoryWCallback;
+import se.de.hu_berlin.informatik.utils.threaded.CallableWithReturn;
 import se.de.hu_berlin.informatik.utils.threaded.DisruptorEventHandler;
-import se.de.hu_berlin.informatik.utils.threaded.IDisruptorEventHandlerFactory;
 
 /**
  * A simple thread to download a file from git hub
  */
-public class GHDownloadFilesCall extends CallableWithPaths<GHTreeEntryWrapper, Boolean> {
+public class GHDownloadFilesCall extends CallableWithReturn<GHTreeEntryWrapper, Object> {
 
 	public GHDownloadFilesCall() {
 		super();
@@ -23,28 +23,25 @@ public class GHDownloadFilesCall extends CallableWithPaths<GHTreeEntryWrapper, B
 	/**
 	 * Starts the download of a given GHTreeEntry into the target directory
 	 * which was set with the creation of the thread object.
-	 * 
-	 * @return True if no exception occurred during the download. False otherwise.
+	 * @return 
+	 * {@code null}
 	 */
 	@Override
-	public Boolean call() {
-		GHTreeEntryWrapper ghte = getInput();
+	public Object processInput(GHTreeEntryWrapper input) {
 		FileOutputStream fos = null;
 
 		try {
-			File tar_f = ghte.getOutputPath().toFile();
+			File tar_f = input.getOutputPath().toFile();
 
-			// log.info( "Downloading " + ghte.getDownloadURL() + " to " +
-			// tar_f);
-			URL website = new URL(ghte.getDownloadURL());
-			// Misc.out(this, "Thread: " + Thread.currentThread().getId());
+			// Log.out(this, "Downloading " + ghte.getDownloadURL() + " to " + tar_f);
+			URL website = new URL(input.getDownloadURL());
+			// Log.out(this, "Thread: " + Thread.currentThread().getId());
 
 			ReadableByteChannel rbc = Channels.newChannel(website.openStream());
 			fos = new FileOutputStream(tar_f);
 			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 		} catch (IOException e) {
-			Log.err(this, e, "Error with content " + ghte.getDownloadURL());
-			return false;
+			Log.err(this, e, "Error with content " + input.getDownloadURL());
 		} finally {
 			if (fos != null) {
 				try {
@@ -54,16 +51,16 @@ public class GHDownloadFilesCall extends CallableWithPaths<GHTreeEntryWrapper, B
 				}
 			}
 		}
-
-		return true;
+		
+		return null;
 	}
-
+	
 	@Override
 	public void resetAndInit() {
 		//not needed
 	}
 
-	public static class Factory implements IDisruptorEventHandlerFactory<GHTreeEntryWrapper> {
+	public static class Factory extends ADisruptorEventHandlerFactoryWCallback<GHTreeEntryWrapper,Object> {
 
 		public Factory() {
 			super();
@@ -75,7 +72,7 @@ public class GHDownloadFilesCall extends CallableWithPaths<GHTreeEntryWrapper, B
 		}
 
 		@Override
-		public DisruptorEventHandler<GHTreeEntryWrapper> newInstance() {
+		public CallableWithReturn<GHTreeEntryWrapper, Object> getNewInstance() {
 			return new GHDownloadFilesCall();
 		}
 	}
