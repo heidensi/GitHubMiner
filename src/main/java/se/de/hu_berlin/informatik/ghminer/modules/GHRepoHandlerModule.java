@@ -56,7 +56,7 @@ public class GHRepoHandlerModule extends AModule<GHRepository, List<GHTreeEntryW
 	 */
 	public GHRepoHandlerModule(GitHub aGitHub, String targetDir, String extension, String bl) {
 		// if this module needs an input item
-		super(true, true);
+		super(true);
 		this.extension = extension;
 		// this.bl = bl;
 		this.aGitHub = aGitHub;
