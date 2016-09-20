@@ -7,14 +7,13 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import se.de.hu_berlin.informatik.utils.miscellaneous.Log;
-import se.de.hu_berlin.informatik.utils.threaded.ADisruptorEventHandlerFactoryWCallback;
-import se.de.hu_berlin.informatik.utils.threaded.CallableWithReturn;
-import se.de.hu_berlin.informatik.utils.threaded.DisruptorEventHandler;
+import se.de.hu_berlin.informatik.utils.threaded.ADisruptorEventHandlerFactoryWMultiplexer;
+import se.de.hu_berlin.informatik.utils.threaded.CallableWithInputAndReturn;
 
 /**
  * A simple thread to download a file from git hub
  */
-public class GHDownloadFilesCall extends CallableWithReturn<GHTreeEntryWrapper, Object> {
+public class GHDownloadFilesCall extends CallableWithInputAndReturn<GHTreeEntryWrapper, Object> {
 
 	public GHDownloadFilesCall() {
 		super();
@@ -60,19 +59,14 @@ public class GHDownloadFilesCall extends CallableWithReturn<GHTreeEntryWrapper, 
 		//not needed
 	}
 
-	public static class Factory extends ADisruptorEventHandlerFactoryWCallback<GHTreeEntryWrapper,Object> {
+	public static class Factory extends ADisruptorEventHandlerFactoryWMultiplexer<GHTreeEntryWrapper,Object> {
 
 		public Factory() {
-			super();
-		}
-		
-		@Override
-		public Class<? extends DisruptorEventHandler<GHTreeEntryWrapper>> getEventHandlerClass() {
-			return GHDownloadFilesCall.class;
+			super(GHDownloadFilesCall.class);
 		}
 
 		@Override
-		public CallableWithReturn<GHTreeEntryWrapper, Object> getNewInstance() {
+		public CallableWithInputAndReturn<GHTreeEntryWrapper, Object> getNewInstance() {
 			return new GHDownloadFilesCall();
 		}
 	}
