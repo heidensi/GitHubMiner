@@ -7,7 +7,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import se.de.hu_berlin.informatik.utils.miscellaneous.Log;
-import se.de.hu_berlin.informatik.utils.threaded.ADisruptorEventHandlerFactoryWMultiplexer;
+import se.de.hu_berlin.informatik.utils.threaded.ADisruptorEventHandlerWMultiplexerFactory;
 import se.de.hu_berlin.informatik.utils.threaded.CallableWithInputAndReturn;
 
 /**
@@ -59,7 +59,7 @@ public class GHDownloadFilesCall extends CallableWithInputAndReturn<GHTreeEntryW
 		//not needed
 	}
 
-	public static class Factory extends ADisruptorEventHandlerFactoryWMultiplexer<GHTreeEntryWrapper,Object> {
+	public static class Factory extends ADisruptorEventHandlerWMultiplexerFactory<GHTreeEntryWrapper,Object> {
 
 		public Factory() {
 			super(GHDownloadFilesCall.class);

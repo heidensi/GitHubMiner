@@ -79,8 +79,7 @@ public class GitHubMiner {
 		String targetDir = options.getOptionValue(GHOptions.OUTPUT_DIR);
 		targetDir = targetDir.endsWith(FILE_SEP) ? targetDir : targetDir + FILE_SEP;
 
-		int maxDLThreads = Integer
-				.parseInt(options.getOptionValue(GHOptions.MAX_DL_THREADS, GHOptions.DEF_MAX_DL_THREADS));
+		int maxDLThreads = options.getNumberOfThreads();
 		String extension = options.getOptionValue(GHOptions.EXTENSION, GHOptions.DEF_EXTENSION);
 		String bl = options.getOptionValue(GHOptions.BLACKLIST, GHOptions.DEF_BLACKLIST);
 

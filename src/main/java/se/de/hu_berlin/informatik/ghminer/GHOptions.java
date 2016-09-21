@@ -19,7 +19,6 @@ public class GHOptions {
 	public final static String EXTENSION = "ext";
 	public final static String MIN_STARS = "min";
 	public final static String MAX_REPOS = "mr";
-	public final static String MAX_DL_THREADS = "maxDLT";
 
 	// Default values for the search queries
 	public final static String DEF_LANG = "Java";
@@ -28,7 +27,6 @@ public class GHOptions {
 	public final static String DEF_MINSTARS = "50";
 	public final static String DEF_MAX_REPOS = "5000"; // has to be convertable
 														// to an integer
-	public final static String DEF_MAX_DL_THREADS = "20";
 
 	// private static Logger log = LoggerFactory.getLogger( "OptionParser" );
 
@@ -43,7 +41,7 @@ public class GHOptions {
 	 */
 	public static OptionParser getOptions(String[] args) {
 		final String tool_usage = "GitHubMiner";
-		final OptionParser options = new OptionParser(tool_usage, args);
+		final OptionParser options = new OptionParser(tool_usage, true, args);
 
 		options.add(OUTPUT_DIR, "output", true, "Path to output directory with all downloaded files.", true);
 		options.add(USER, "user", true, "The user name to authenticate against GitHub. "
@@ -60,9 +58,6 @@ public class GHOptions {
 				"The minimum of stars that a project has to have. Default is " + DEF_MINSTARS + ".", false);
 		options.add(MAX_REPOS, "maxNumberOfRepos", true,
 				"The maximum number of repositories that will be used. Default is " + DEF_MAX_REPOS + ".", false);
-		options.add(MAX_DL_THREADS, "maxNumberOfDLThreads", true,
-				"The maximum number of download threads that will be used. Default is " + DEF_MAX_DL_THREADS + ".",
-				false);
 
 		options.parseCommandLine();
 
