@@ -91,9 +91,10 @@ public class GitHubMiner {
 		int maxRepos = Integer.parseInt(options.getOptionValue(GHOptions.MAX_REPOS, GHOptions.DEF_MAX_REPOS));
 		Log.out(this, "Reducing the number of repositories to " + maxRepos);
 
-		PipeLinker linker = new PipeLinker().link(new GHRepoHandlerModule(aGitHub, targetDir, extension, bl),
+		PipeLinker linker = new PipeLinker().link(
+				new GHRepoHandlerModule(aGitHub, targetDir, extension, bl),
 				new ListSequencerPipe<List<GHTreeEntryWrapper>, GHTreeEntryWrapper>(),
-				new ThreadedProcessorPipe<GHTreeEntryWrapper, Object>(maxDLThreads, new GHDownloadFilesCall.Factory())
+				new ThreadedProcessorPipe<GHTreeEntryWrapper, Object>(maxDLThreads, new GHDownloadFilesEH.Factory())
 				.enableTracking(50));
 
 		GHGetRepos.findRepos(aGitHub, options, linker);

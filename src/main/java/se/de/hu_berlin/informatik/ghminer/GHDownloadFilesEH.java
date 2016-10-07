@@ -8,16 +8,12 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import se.de.hu_berlin.informatik.utils.miscellaneous.Log;
 import se.de.hu_berlin.informatik.utils.threaded.ADisruptorEventHandlerWMultiplexerFactory;
-import se.de.hu_berlin.informatik.utils.threaded.CallableWithInputAndReturn;
+import se.de.hu_berlin.informatik.utils.threaded.EHWithInputAndReturn;
 
 /**
  * A simple thread to download a file from git hub
  */
-public class GHDownloadFilesCall extends CallableWithInputAndReturn<GHTreeEntryWrapper, Object> {
-
-	public GHDownloadFilesCall() {
-		super();
-	}
+public class GHDownloadFilesEH extends EHWithInputAndReturn<GHTreeEntryWrapper, Object> {
 
 	/**
 	 * Starts the download of a given GHTreeEntry into the target directory
@@ -62,12 +58,12 @@ public class GHDownloadFilesCall extends CallableWithInputAndReturn<GHTreeEntryW
 	public static class Factory extends ADisruptorEventHandlerWMultiplexerFactory<GHTreeEntryWrapper,Object> {
 
 		public Factory() {
-			super(GHDownloadFilesCall.class);
+			super(GHDownloadFilesEH.class);
 		}
 
 		@Override
-		public CallableWithInputAndReturn<GHTreeEntryWrapper, Object> getNewInstance() {
-			return new GHDownloadFilesCall();
+		public EHWithInputAndReturn<GHTreeEntryWrapper, Object> getNewInstance() {
+			return new GHDownloadFilesEH();
 		}
 	}
 	
