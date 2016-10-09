@@ -1,24 +1,14 @@
 package se.de.hu_berlin.informatik.ghminer;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import org.apache.commons.cli.Option;
 
-import se.de.hu_berlin.informatik.utils.optionparser.OptionParser;
+import se.de.hu_berlin.informatik.utils.optionparser.IOptions;
 
 /**
  * The options for the git hub downloader are defined in this class as well as
  * the default values.
  */
 public class GHOptions {
-
-	public final static String OUTPUT_DIR = "o";
-	public final static String LANG = "l";
-	public final static String USER = "u";
-	public final static String PWD = "p";
-	public final static String BLACKLIST = "bl";
-	public final static String EXTENSION = "ext";
-	public final static String MIN_STARS = "min";
-	public final static String MAX_REPOS = "mr";
 
 	// Default values for the search queries
 	public final static String DEF_LANG = "Java";
@@ -27,76 +17,56 @@ public class GHOptions {
 	public final static String DEF_MINSTARS = "50";
 	public final static String DEF_MAX_REPOS = "5000"; // has to be convertable
 														// to an integer
-
-	// private static Logger log = LoggerFactory.getLogger( "OptionParser" );
-
-	/**
-	 * Parses the options from the command line.
-	 * 
-	 * @param args
-	 *            the application's arguments
-	 * @return an {@link OptionParser} object that provides access to all parsed
-	 *         options and their values or their default values if no specific values
-	 *         were set.
-	 */
-	public static OptionParser getOptions(String[] args) {
-		final String tool_usage = "GitHubMiner";
-		final OptionParser options = new OptionParser(tool_usage, true, args);
-
-		options.add(OUTPUT_DIR, "output", true, "Path to output directory with all downloaded files.", true);
-		options.add(USER, "user", true, "The user name to authenticate against GitHub. "
-				+ " Should be provided together with a password at least once to generate an authentication token.");
-		options.add(PWD, "password", true, "The password to authenticate against GitHub. "
-				+ "Should be provided toether with a user name at least once to generate an authentication token.");
-		options.add(BLACKLIST, "blacklist", true, "The blacklist to filter unwanted repositories. Use it like "
-				+ "\"bl=" + DEF_BLACKLIST + "\" (which is also the default).", false);
-		options.add(EXTENSION, "extensions", true,
-				"The filter to only download files with a certain suffix. Default is \"" + DEF_EXTENSION + "\"", false);
-		options.add(LANG, "language", true, "The language of the mined repositories. Default is " + DEF_LANG + ".",
-				false);
-		options.add(MIN_STARS, "minimalStars", true,
-				"The minimum of stars that a project has to have. Default is " + DEF_MINSTARS + ".", false);
-		options.add(MAX_REPOS, "maxNumberOfRepos", true,
+	public static enum CmdOptions implements IOptions {
+		/* add options here according to your needs */
+		OUTPUT("o", "output", true, "Path to output directory with all downloaded files.", true),
+		USER("u", "user", true, "The user name to authenticate against GitHub. "
+				+ " Should be provided together with a password at least once to generate an authentication token.", false),
+		PWD("p", "password", true, "The password to authenticate against GitHub. "
+				+ "Should be provided toether with a user name at least once to generate an authentication token.", false),
+		BLACKLIST("bl", "blacklist", true, "The blacklist to filter unwanted repositories. Use it like "
+				+ "\"bl=" + DEF_BLACKLIST + "\" (which is also the default).", false),
+		EXTENSION("ext", "extensions", true,
+				"The filter to only download files with a certain suffix. Default is \"" + DEF_EXTENSION + "\"", false),
+		LANG("l", "language", true, "The language of the mined repositories. Default is " + DEF_LANG + ".",
+				false),
+		MIN_STARS("min", "minimalStars", true,
+				"The minimum of stars that a project has to have. Default is " + DEF_MINSTARS + ".", false),
+		MAX_REPOS("mr", "maxNumberOfRepos", true,
 				"The maximum number of repositories that will be used. Default is " + DEF_MAX_REPOS + ".", false);
 
-		options.parseCommandLine();
+		/* the following code blocks should not need to be changed */
+		final private Option option;
+		final private int groupId;
 
-		// printReadOptions( options );
-
-		return options;
+		//adds an option that is not part of any group
+		CmdOptions(final String opt, final String longOpt, final boolean hasArg, final String description, final boolean required) {
+			this.option = Option.builder(opt).longOpt(longOpt).required(required).hasArg(hasArg).desc(description).build();
+			this.groupId = NO_GROUP;
+		}
+		
+		//adds an option that is part of the group with the specified index (positive integer)
+		//a negative index means that this option is part of no group
+		//this option will not be required, however, the group itself will be
+		CmdOptions(final String opt, final String longOpt, final boolean hasArg, final String description, int groupId) {
+			this.option = Option.builder(opt).longOpt(longOpt).required(false).hasArg(hasArg).desc(description).build();
+			this.groupId = groupId;
+		}
+		
+		//adds the given option that will be part of the group with the given id
+		CmdOptions(Option option, int groupId) {
+			this.option = option;
+			this.groupId = groupId;
+		}
+		
+		//adds the given option that will be part of no group
+		CmdOptions(Option option) {
+			this(option, NO_GROUP);
+		}
+		
+		@Override public Option option() { return option; }
+		@Override public int groupId() { return groupId; }
+		@Override public String toString() { return option.getOpt(); }
 	}
-
-	// /**
-	// * Just to see that the option handling was successful
-	// * @param aOP An option parser object after the parsing of the command
-	// line
-	// */
-	// private static void printReadOptions( OptionParser aOP ) {
-	// log.info( "Found option " + OUTPUT_DIR + " " + aOP.getOptionValue(
-	// OUTPUT_DIR ));
-	// log.info( "Found option " + USER + " " + aOP.getOptionValue( USER ));
-	// log.info( "Found option " + PWD + " *********");
-	//
-	// printOptionStatus( BLACKLIST, aOP );
-	// printOptionStatus( LANG, aOP );
-	// printOptionStatus( EXTENSION, aOP );
-	// printOptionStatus( MIN_STARS, aOP );
-	// printOptionStatus( MAX_REPOS, aOP );
-	// }
-	//
-	// /**
-	// * Prints if the option was set or not
-	// * @param aOption The key for the option in the parser object
-	// * @param aOP The option parser object
-	// */
-	// private static void printOptionStatus( String aOption, OptionParser aOP )
-	// {
-	// if( aOP.hasOption( aOption ) ) {
-	// log.info( "Found option " + aOption + " " + aOP.getOptionValue( aOption
-	// ));
-	// } else {
-	// log.info( "No option was set for " + aOption );
-	// }
-	// }
 
 }

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.kohsuke.github.GitHub;
+
+import se.de.hu_berlin.informatik.ghminer.GHOptions.CmdOptions;
 import se.de.hu_berlin.informatik.ghminer.modules.GHRepoHandlerModule;
 import se.de.hu_berlin.informatik.utils.miscellaneous.Log;
 import se.de.hu_berlin.informatik.utils.optionparser.OptionParser;
@@ -31,7 +33,7 @@ public class GitHubMiner {
 	 *            The arguments
 	 */
 	public GitHubMiner(String[] aArgs) {
-		options = GHOptions.getOptions(aArgs);
+		options = OptionParser.getOptions("GitHubMiner", true, CmdOptions.class, aArgs);
 	}
 
 	/**
@@ -53,8 +55,8 @@ public class GitHubMiner {
 	public void downloadFromGH() {
 		Log.out(this, "Started the github downloader");
 		try {
-			String user = options.getOptionValue(GHOptions.USER);
-			String password = options.getOptionValue(GHOptions.PWD);
+			String user = options.getOptionValue(CmdOptions.USER);
+			String password = options.getOptionValue(CmdOptions.PWD);
 			GitHub gh = GHConnectionBuilder.getConnection(user, password);
 
 			Log.out(this, "Connected to git hub with a rate limit of: " + gh.getRateLimit().limit + " per hour");
@@ -76,19 +78,19 @@ public class GitHubMiner {
 	 */
 	private void findAllFilesInAllRepos(GitHub aGitHub) {
 
-		String targetDir = options.getOptionValue(GHOptions.OUTPUT_DIR);
+		String targetDir = options.getOptionValue(CmdOptions.OUTPUT);
 		targetDir = targetDir.endsWith(FILE_SEP) ? targetDir : targetDir + FILE_SEP;
 
 		int maxDLThreads = options.getNumberOfThreads();
-		String extension = options.getOptionValue(GHOptions.EXTENSION, GHOptions.DEF_EXTENSION);
-		String bl = options.getOptionValue(GHOptions.BLACKLIST, GHOptions.DEF_BLACKLIST);
+		String extension = options.getOptionValue(CmdOptions.EXTENSION, GHOptions.DEF_EXTENSION);
+		String bl = options.getOptionValue(CmdOptions.BLACKLIST, GHOptions.DEF_BLACKLIST);
 
 		File tDir_f = new File(targetDir);
 		if (!tDir_f.exists()) {
 			tDir_f.mkdirs();
 		}
 
-		int maxRepos = Integer.parseInt(options.getOptionValue(GHOptions.MAX_REPOS, GHOptions.DEF_MAX_REPOS));
+		int maxRepos = Integer.parseInt(options.getOptionValue(CmdOptions.MAX_REPOS, GHOptions.DEF_MAX_REPOS));
 		Log.out(this, "Reducing the number of repositories to " + maxRepos);
 
 		PipeLinker linker = new PipeLinker().link(

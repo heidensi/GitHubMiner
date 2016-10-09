@@ -10,6 +10,7 @@ import org.kohsuke.github.PagedSearchIterable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import se.de.hu_berlin.informatik.ghminer.GHOptions.CmdOptions;
 import se.de.hu_berlin.informatik.utils.optionparser.OptionParser;
 import se.de.hu_berlin.informatik.utils.tm.pipeframework.PipeLinker;
 
@@ -59,7 +60,7 @@ public class GHGetRepos {
 	 */
 	public static void findRepos(GitHub aGitHub, OptionParser aOptions, PipeLinker aLinker) {
 		reposProcessed = 0;
-		maxRepos = Integer.parseInt(aOptions.getOptionValue(GHOptions.MAX_REPOS, GHOptions.DEF_MAX_REPOS));
+		maxRepos = Integer.parseInt(aOptions.getOptionValue(CmdOptions.MAX_REPOS, GHOptions.DEF_MAX_REPOS));
 		alreadyReadRepos.clear();
 
 		findRepos(aGitHub, aOptions, aLinker, NO_UPPER_BOUND);
@@ -86,16 +87,16 @@ public class GHGetRepos {
 		GHRepositorySearchBuilder ghrsb = aGitHub.searchRepositories();
 		// adding the blacklist - default is "NOT android" to avoid downloading
 		// android repos
-		ghrsb.q(aOptions.getOptionValue(GHOptions.BLACKLIST, GHOptions.DEF_BLACKLIST));
+		ghrsb.q(aOptions.getOptionValue(CmdOptions.BLACKLIST, GHOptions.DEF_BLACKLIST));
 		// adding the language with "Java" as its default
-		ghrsb.language(aOptions.getOptionValue(GHOptions.LANG, GHOptions.DEF_LANG));
+		ghrsb.language(aOptions.getOptionValue(CmdOptions.LANG, GHOptions.DEF_LANG));
 		// restricting the number of stars already reduces the number of
 		// repositories greatly
 		if (aMaxStars == NO_UPPER_BOUND) {
-			ghrsb.q("stars:>=" + aOptions.getOptionValue(GHOptions.MIN_STARS, GHOptions.DEF_MINSTARS));
+			ghrsb.q("stars:>=" + aOptions.getOptionValue(CmdOptions.MIN_STARS, GHOptions.DEF_MINSTARS));
 		} else {
 			// using the interval
-			ghrsb.q("stars:\"" + aOptions.getOptionValue(GHOptions.MIN_STARS, GHOptions.DEF_MINSTARS) + " .. "
+			ghrsb.q("stars:\"" + aOptions.getOptionValue(CmdOptions.MIN_STARS, GHOptions.DEF_MINSTARS) + " .. "
 					+ aMaxStars + "\"");
 		}
 
