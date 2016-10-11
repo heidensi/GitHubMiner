@@ -7,8 +7,8 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import se.de.hu_berlin.informatik.utils.miscellaneous.Log;
-import se.de.hu_berlin.informatik.utils.threaded.ADisruptorEventHandlerWMultiplexerFactory;
 import se.de.hu_berlin.informatik.utils.threaded.EHWithInputAndReturn;
+import se.de.hu_berlin.informatik.utils.threaded.EHWithInputAndReturnFactory;
 
 /**
  * A simple thread to download a file from git hub
@@ -55,14 +55,14 @@ public class GHDownloadFilesEH extends EHWithInputAndReturn<GHTreeEntryWrapper, 
 		//not needed
 	}
 
-	public static class Factory extends ADisruptorEventHandlerWMultiplexerFactory<GHTreeEntryWrapper,Object> {
-
+	public static class Factory extends EHWithInputAndReturnFactory<GHTreeEntryWrapper,Object> {
+		
 		public Factory() {
 			super(GHDownloadFilesEH.class);
 		}
 
 		@Override
-		public EHWithInputAndReturn<GHTreeEntryWrapper, Object> getNewInstance() {
+		public EHWithInputAndReturn<GHTreeEntryWrapper, Object> newFreshInstance() {
 			return new GHDownloadFilesEH();
 		}
 	}
