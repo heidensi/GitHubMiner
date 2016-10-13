@@ -2,7 +2,7 @@ package se.de.hu_berlin.informatik.ghminer;
 
 import org.apache.commons.cli.Option;
 
-import se.de.hu_berlin.informatik.utils.optionparser.IOptions;
+import se.de.hu_berlin.informatik.utils.optionparser.OptionWrapperInterface;
 import se.de.hu_berlin.informatik.utils.optionparser.OptionWrapper;
 
 /**
@@ -18,7 +18,7 @@ public class GHOptions {
 	public final static String DEF_MINSTARS = "50";
 	public final static String DEF_MAX_REPOS = "5000"; // has to be convertable
 														// to an integer
-	public static enum CmdOptions implements IOptions {
+	public static enum CmdOptions implements OptionWrapperInterface {
 		/* add options here according to your needs */
 		OUTPUT("o", "output", true, "Path to output directory with all downloaded files.", true),
 		USER("u", "user", true, "The user name to authenticate against GitHub. "
