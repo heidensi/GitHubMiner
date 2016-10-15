@@ -7,8 +7,8 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import se.de.hu_berlin.informatik.utils.miscellaneous.Log;
-import se.de.hu_berlin.informatik.utils.threaded.EHWithInputAndReturn;
-import se.de.hu_berlin.informatik.utils.threaded.EHWithInputAndReturnFactory;
+import se.de.hu_berlin.informatik.utils.threaded.disruptor.eventhandler.EHWithInputAndReturn;
+import se.de.hu_berlin.informatik.utils.threaded.disruptor.eventhandler.EHWithInputAndReturnFactory;
 
 /**
  * A simple thread to download a file from git hub
