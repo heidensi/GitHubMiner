@@ -2,8 +2,6 @@ package se.de.hu_berlin.informatik.ghminer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-
 import org.kohsuke.github.GitHub;
 
 import se.de.hu_berlin.informatik.ghminer.GHOptions.CmdOptions;
@@ -95,7 +93,7 @@ public class GitHubMiner {
 
 		PipeLinker linker = new PipeLinker().append(
 				new GHRepoHandlerModule(aGitHub, targetDir, extension, bl),
-				new ListSequencerPipe<List<GHTreeEntryWrapper>, GHTreeEntryWrapper>(),
+				new ListSequencerPipe<GHTreeEntryWrapper>(),
 				new ThreadedProcessorPipe<GHTreeEntryWrapper, Object>(maxDLThreads, new GHDownloadFilesEH.Factory())
 				.enableTracking(50));
 
