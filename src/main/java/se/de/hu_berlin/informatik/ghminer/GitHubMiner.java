@@ -9,7 +9,7 @@ import se.de.hu_berlin.informatik.ghminer.modules.GHRepoHandlerModule;
 import se.de.hu_berlin.informatik.utils.miscellaneous.Log;
 import se.de.hu_berlin.informatik.utils.optionparser.OptionParser;
 import se.de.hu_berlin.informatik.utils.tm.pipeframework.PipeLinker;
-import se.de.hu_berlin.informatik.utils.tm.pipes.ListSequencerPipe;
+import se.de.hu_berlin.informatik.utils.tm.pipes.CollectionSequencerPipe;
 import se.de.hu_berlin.informatik.utils.tm.pipes.ThreadedProcessorPipe;
 
 /**
@@ -93,7 +93,7 @@ public class GitHubMiner {
 
 		PipeLinker linker = new PipeLinker().append(
 				new GHRepoHandlerModule(aGitHub, targetDir, extension, bl),
-				new ListSequencerPipe<GHTreeEntryWrapper>(),
+				new CollectionSequencerPipe<GHTreeEntryWrapper>(),
 				new ThreadedProcessorPipe<GHTreeEntryWrapper, Object>(maxDLThreads, new GHDownloadFilesEH.Factory())
 				.enableTracking(50));
 
