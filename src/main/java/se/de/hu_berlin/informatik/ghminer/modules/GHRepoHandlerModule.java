@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import se.de.hu_berlin.informatik.ghminer.GHTreeEntryWrapper;
 import se.de.hu_berlin.informatik.utils.miscellaneous.IOutputPathGenerator;
 import se.de.hu_berlin.informatik.utils.miscellaneous.OutputPathGenerator;
-import se.de.hu_berlin.informatik.utils.tm.moduleframework.AbstractModule;
+import se.de.hu_berlin.informatik.utils.tm.AbstractProcessor;
 
 /**
  * The repository handler searches for the source code files in a given set of
@@ -29,7 +29,7 @@ import se.de.hu_berlin.informatik.utils.tm.moduleframework.AbstractModule;
  * 
  * @author Roy Lieck, Simon Heiden
  */
-public class GHRepoHandlerModule extends AbstractModule<GHRepository, List<GHTreeEntryWrapper>> {
+public class GHRepoHandlerModule extends AbstractProcessor<GHRepository, List<GHTreeEntryWrapper>> {
 
 	private Logger log = LoggerFactory.getLogger(GHRepoHandlerModule.class);
 	private GitHub aGitHub = null;
@@ -55,8 +55,7 @@ public class GHRepoHandlerModule extends AbstractModule<GHRepository, List<GHTre
 	 *            blacklist option argument
 	 */
 	public GHRepoHandlerModule(GitHub aGitHub, String targetDir, String extension, String bl) {
-		// if this module needs an input item
-		super(true);
+		super();
 		this.extension = extension;
 		// this.bl = bl;
 		this.aGitHub = aGitHub;

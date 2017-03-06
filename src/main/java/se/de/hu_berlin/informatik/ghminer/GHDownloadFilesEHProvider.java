@@ -1,13 +1,12 @@
 package se.de.hu_berlin.informatik.ghminer;
 
 import se.de.hu_berlin.informatik.utils.fileoperations.FileUtils;
-import se.de.hu_berlin.informatik.utils.threaded.disruptor.eventhandler.EHWithInputAndReturn;
-import se.de.hu_berlin.informatik.utils.threaded.disruptor.eventhandler.EHWithInputAndReturnMethodProvider;
+import se.de.hu_berlin.informatik.utils.tm.AbstractProcessor;
 
 /**
  * A simple event handler that downloads a file from git hub
  */
-public class GHDownloadFilesEHProvider extends EHWithInputAndReturnMethodProvider<GHTreeEntryWrapper, Object> {
+public class GHDownloadFilesEHProvider extends AbstractProcessor<GHTreeEntryWrapper, Object> {
 
 	/**
 	 * Starts the download of a given GHTreeEntry into the target directory
@@ -16,8 +15,7 @@ public class GHDownloadFilesEHProvider extends EHWithInputAndReturnMethodProvide
 	 * {@code null}
 	 */
 	@Override
-	public Object processInput(GHTreeEntryWrapper input,
-			EHWithInputAndReturn<GHTreeEntryWrapper, Object> executingHandler) {
+	public Object processItem(GHTreeEntryWrapper input) {
 		FileUtils.downloadFile(input.getDownloadURL(), input.getOutputPath().toFile());
 		return null;
 	}
