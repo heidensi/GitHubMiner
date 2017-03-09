@@ -5,12 +5,12 @@ import java.io.IOException;
 import org.kohsuke.github.GitHub;
 
 import se.de.hu_berlin.informatik.ghminer.GHOptions.CmdOptions;
-import se.de.hu_berlin.informatik.ghminer.modules.GHRepoHandlerModule;
+import se.de.hu_berlin.informatik.ghminer.modules.GHRepoHandler;
 import se.de.hu_berlin.informatik.utils.miscellaneous.Log;
 import se.de.hu_berlin.informatik.utils.optionparser.OptionParser;
-import se.de.hu_berlin.informatik.utils.tm.modules.CollectionSequencerProcessor;
-import se.de.hu_berlin.informatik.utils.tm.pipeframework.PipeLinker;
-import se.de.hu_berlin.informatik.utils.tm.pipes.ThreadedProcessorPipe;
+import se.de.hu_berlin.informatik.utils.processors.basics.CollectionSequencer;
+import se.de.hu_berlin.informatik.utils.processors.basics.ThreadedProcessor;
+import se.de.hu_berlin.informatik.utils.processors.sockets.pipe.PipeLinker;
 
 /**
  * A tool for downloading multiple source files from git hub. By default this
@@ -92,9 +92,9 @@ public class GitHubMiner {
 		Log.out(this, "Reducing the number of repositories to " + maxRepos);
 
 		PipeLinker linker = new PipeLinker().append(
-				new GHRepoHandlerModule(aGitHub, targetDir, extension, bl),
-				new CollectionSequencerProcessor<GHTreeEntryWrapper>(),
-				new ThreadedProcessorPipe<GHTreeEntryWrapper, Object>(maxDLThreads, new GHDownloadFilesEHProvider())
+				new GHRepoHandler(aGitHub, targetDir, extension, bl),
+				new CollectionSequencer<GHTreeEntryWrapper>(),
+				new ThreadedProcessor<GHTreeEntryWrapper, Object>(maxDLThreads, new GHDownloadFilesEHProvider())
 				.enableTracking(50));
 
 		GHGetRepos.findRepos(aGitHub, options, linker);

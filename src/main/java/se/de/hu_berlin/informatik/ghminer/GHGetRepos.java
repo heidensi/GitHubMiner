@@ -7,12 +7,11 @@ import org.kohsuke.github.GHRepositorySearchBuilder;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.PagedIterator;
 import org.kohsuke.github.PagedSearchIterable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import se.de.hu_berlin.informatik.ghminer.GHOptions.CmdOptions;
+import se.de.hu_berlin.informatik.utils.miscellaneous.Log;
 import se.de.hu_berlin.informatik.utils.optionparser.OptionParser;
-import se.de.hu_berlin.informatik.utils.tm.pipeframework.PipeLinker;
+import se.de.hu_berlin.informatik.utils.processors.sockets.pipe.PipeLinker;
 
 /**
  * This class sends queries to the git hub api asking for repositories that
@@ -24,7 +23,6 @@ import se.de.hu_berlin.informatik.utils.tm.pipeframework.PipeLinker;
  */
 public class GHGetRepos {
 
-	private static Logger log = LoggerFactory.getLogger(GHGetRepos.class);
 	public final static int NO_UPPER_BOUND = -1;
 	// this is a restriction from git hub and will be used to trigger the
 	// loading
@@ -106,7 +104,7 @@ public class GHGetRepos {
 		PagedSearchIterable<GHRepository> result_it = ghrsb.list();
 		result_it.withPageSize(MAX_PAGE_SIZE);
 		int totalCount = result_it.getTotalCount();
-		log.info("Found " + totalCount + " repositories that matched the query.");
+		Log.out(GHGetRepos.class, "Found " + totalCount + " repositories that matched the query.");
 
 		PagedIterator<GHRepository> pi_it = result_it.iterator();
 		GHRepository repo = null;
@@ -132,7 +130,7 @@ public class GHGetRepos {
 		// check the stars of the last repo that was handled
 		if (totalCount >= MAX_RESULTS_PER_QUERY && repo != null) {
 			int upperBound = repo.getWatchers() + STARS_BUFFER;
-			log.info("Asking for more repositories. This time with an upper bound of " + upperBound);
+			Log.out(GHGetRepos.class, "Asking for more repositories. This time with an upper bound of " + upperBound);
 			findRepos(aGitHub, aOptions, aLinker, upperBound);
 		}
 	}

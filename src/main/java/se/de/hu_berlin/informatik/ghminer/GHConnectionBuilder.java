@@ -9,15 +9,13 @@ import java.util.Properties;
 
 import org.kohsuke.github.GHAuthorization;
 import org.kohsuke.github.GitHub;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import se.de.hu_berlin.informatik.utils.miscellaneous.Log;
 
 /**
  * Establishes the connection to the git hub
  */
 public class GHConnectionBuilder {
-
-	static Logger log = LoggerFactory.getLogger(GHConnectionBuilder.class);
 
 	// this token is used when the user has no token and does not want to
 	// provide
@@ -47,7 +45,7 @@ public class GHConnectionBuilder {
 			return GitHub.connect();
 		} catch (IOException e) {
 			// the normal connect did not work
-			log.info("No auth token could be found.");
+			Log.out(GHConnectionBuilder.class, "No auth token could be found.");
 			return createToken(aUser, aPwd);
 		}
 	}
@@ -69,7 +67,7 @@ public class GHConnectionBuilder {
 
 		try {
 			if (aUser != null && aPwd != null) {
-				log.info("Creating a token using basic authentication");
+				Log.out(GHConnectionBuilder.class, "Creating a token using basic authentication");
 				gh = GitHub.connectUsingPassword(aUser, aPwd);
 
 				GHAuthorization gha = null;
@@ -78,22 +76,21 @@ public class GHConnectionBuilder {
 					gha = gh.createToken(null, TOKEN_NAME, null);
 					token = gha.getToken();
 				} catch (IOException e) {
-					log.error("Aborting the token generation...  Using the default (shared) token...", e);
-					log.error("Please delete the auth token " + TOKEN_NAME + " from your profile");
+					Log.out(GHConnectionBuilder.class, "Aborting the token generation...  Using the default (shared) token...", e);
+					Log.out(GHConnectionBuilder.class, "Please delete the auth token " + TOKEN_NAME + " from your profile");
 					token = DEFAULT_TOKEN;
 				}
 
 				updateGitHubProps(token);
 
 			} else {
-				log.info(
-						"Using the default (shared) auth token because no credentials were provided. Download rate may be slower.");
+				Log.out(GHConnectionBuilder.class, "Using the default (shared) auth token because no credentials were provided. Download rate may be slower.");
 				return GitHub.connectUsingOAuth(DEFAULT_TOKEN);
 			}
 
 			gh = GitHub.connectUsingOAuth(token);
 		} catch (IOException e) {
-			log.error("Could not build a connection", e);
+			Log.out(GHConnectionBuilder.class, "Could not build a connection", e);
 		}
 
 		return gh;
@@ -155,7 +152,7 @@ public class GHConnectionBuilder {
 			}
 		}
 
-		log.info("Updated the token properties file at: " + propertyFile.getAbsolutePath());
+		Log.out(GHConnectionBuilder.class, "Updated the token properties file at: " + propertyFile.getAbsolutePath());
 	}
 
 }

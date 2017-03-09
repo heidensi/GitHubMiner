@@ -14,13 +14,12 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHTree;
 import org.kohsuke.github.GHTreeEntry;
 import org.kohsuke.github.GitHub;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import se.de.hu_berlin.informatik.ghminer.GHTreeEntryWrapper;
 import se.de.hu_berlin.informatik.utils.miscellaneous.IOutputPathGenerator;
+import se.de.hu_berlin.informatik.utils.miscellaneous.Log;
 import se.de.hu_berlin.informatik.utils.miscellaneous.OutputPathGenerator;
-import se.de.hu_berlin.informatik.utils.tm.AbstractProcessor;
+import se.de.hu_berlin.informatik.utils.processors.AbstractProcessor;
 
 /**
  * The repository handler searches for the source code files in a given set of
@@ -29,9 +28,8 @@ import se.de.hu_berlin.informatik.utils.tm.AbstractProcessor;
  * 
  * @author Roy Lieck, Simon Heiden
  */
-public class GHRepoHandlerModule extends AbstractProcessor<GHRepository, List<GHTreeEntryWrapper>> {
+public class GHRepoHandler extends AbstractProcessor<GHRepository, List<GHTreeEntryWrapper>> {
 
-	private Logger log = LoggerFactory.getLogger(GHRepoHandlerModule.class);
 	private GitHub aGitHub = null;
 	private String extension = null;
 	// private String bl = "";
@@ -54,7 +52,7 @@ public class GHRepoHandlerModule extends AbstractProcessor<GHRepository, List<GH
 	 * @param bl
 	 *            blacklist option argument
 	 */
-	public GHRepoHandlerModule(GitHub aGitHub, String targetDir, String extension, String bl) {
+	public GHRepoHandler(GitHub aGitHub, String targetDir, String extension, String bl) {
 		super();
 		this.extension = extension;
 		// this.bl = bl;
@@ -84,7 +82,7 @@ public class GHRepoHandlerModule extends AbstractProcessor<GHRepository, List<GH
 	 *         null in the case of an error or no found files)
 	 */
 	private List<GHTreeEntryWrapper> handleRepo(GitHub aGitHub, GHRepository aRepo) {
-		log.info("Handling " + ++repoCounter + ". repository object: " + aRepo.getFullName() + " / "
+		Log.out(GHRepoHandler.class, "Handling " + ++repoCounter + ". repository object: " + aRepo.getFullName() + " / "
 				+ aRepo.getSvnUrl());
 
 		// // because there is no reset for the query the searcher has to be
@@ -149,10 +147,10 @@ public class GHRepoHandlerModule extends AbstractProcessor<GHRepository, List<GH
 			List<GHTreeEntryWrapper> allEntries = new LinkedList<GHTreeEntryWrapper>();
 			findAllFilesInTree(allEntries, aRepo.getTreeRecursive(aRepo.getDefaultBranch(), 1), aRepo, generator);
 
-			log.info("Found " + allEntries.size() + " matching files in repository " + aRepo.getName());
+			Log.out(GHRepoHandler.class, "Found " + allEntries.size() + " matching files in repository " + aRepo.getName());
 			return allEntries;
 		} catch (IOException e) {
-			log.error("IOException during retrieving rescursive tree", e);
+			Log.err(GHRepoHandler.class, "IOException during retrieving rescursive tree", e);
 		}
 		return null;
 	}
@@ -172,12 +170,12 @@ public class GHRepoHandlerModule extends AbstractProcessor<GHRepository, List<GH
 	private void findAllFilesInTree(Collection<GHTreeEntryWrapper> aAllEntries, GHTree aTree, GHRepository aRepo,
 			IOutputPathGenerator<Path> generator) {
 		if (aTree.isTruncated()) {
-			log.info("The tree " + aTree.getUrl() + " was truncated and will be reduced" + " to a normal tree");
+			Log.out(GHRepoHandler.class, "The tree " + aTree.getUrl() + " was truncated and will be reduced" + " to a normal tree");
 			try {
 				// switch to normal tree handling
 				findAllFilesInNormalTree(aAllEntries, aRepo.getTree(aTree.getSha()), aRepo, generator);
 			} catch (IOException e) {
-				log.error("IOException while parsing tree for " + aRepo.getName(), e);
+				Log.err(GHRepoHandler.class, "IOException while parsing tree for " + aRepo.getName(), e);
 			}
 		} else {
 
@@ -222,7 +220,7 @@ public class GHRepoHandlerModule extends AbstractProcessor<GHRepository, List<GH
 					// proven wrong
 					findAllFilesInTree(aAllEntries, aRepo.getTree(node.getSha()), aRepo, generator);
 				} catch (IOException e) {
-					log.error("IOException while parsing tree for " + aRepo.getName(), e);
+					Log.err(GHRepoHandler.class, "IOException while parsing tree for " + aRepo.getName(), e);
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 package se.de.hu_berlin.informatik.ghminer;
 
-import se.de.hu_berlin.informatik.utils.fileoperations.FileUtils;
-import se.de.hu_berlin.informatik.utils.tm.AbstractProcessor;
+import se.de.hu_berlin.informatik.utils.files.FileUtils;
+import se.de.hu_berlin.informatik.utils.processors.AbstractProcessor;
 
 /**
  * A simple event handler that downloads a file from git hub
