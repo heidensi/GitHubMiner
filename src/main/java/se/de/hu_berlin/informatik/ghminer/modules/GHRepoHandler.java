@@ -60,13 +60,7 @@ public class GHRepoHandler extends AbstractProcessor<GHRepository, List<GHTreeEn
 		this.targetDir = targetDir;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * se.de.hu_berlin.informatik.utils.tm.ITransmitter#processItem(java.lang.
-	 * Object)
-	 */
+	@Override
 	public List<GHTreeEntryWrapper> processItem(GHRepository repo) {
 		return handleRepo(aGitHub, repo);
 	}
