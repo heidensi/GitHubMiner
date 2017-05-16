@@ -94,7 +94,7 @@ public class GitHubMiner {
 		PipeLinker linker = new PipeLinker().append(
 				new GHRepoHandler(aGitHub, targetDir, extension, bl),
 				new CollectionSequencer<GHTreeEntryWrapper>(),
-				new ThreadedProcessor<GHTreeEntryWrapper, Object>(maxDLThreads, new GHDownloadFilesEHProvider())
+				new ThreadedProcessor<GHTreeEntryWrapper, Object>(maxDLThreads, new GHDownloadFilesEHProvider()).asPipe()
 				.enableTracking(50));
 
 		GHGetRepos.findRepos(aGitHub, options, linker);
